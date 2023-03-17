@@ -90,3 +90,7 @@ components: ## <-- this is really useful!
         token:
           type: string
           description: The authentication token for the user
+          
+        
+        
+    
