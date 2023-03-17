@@ -3,3 +3,6 @@ This Repository houses all the information for the HomeServices API, this has be
 
 # Notes
 - A standardised name for the yaml file should be created, such as swagger.yaml or homeservices.yaml. There is no need to have version numbers in the name of the file as the version will be specified in the yaml file.
+
+# Link to API Docs
+Please navigate to the hosted docs using the following link: https://tradiesystem.github.io/api_314/
