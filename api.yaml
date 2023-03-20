@@ -272,7 +272,7 @@ components:
           description: Token required for reauthorisation
         expiryDate:
           type: string
-          description: 
+          description: "Dictates when the token will be set as expired and unusable"
 ##TOKENS
 securityDefinitions:
   basicAuth:
