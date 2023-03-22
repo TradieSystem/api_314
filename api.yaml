@@ -1,0 +1,285 @@
+openapi: 3.0.0
+info:
+  title: HomeServices API
+  description: A cross reference for front-to-back end development
+  version: 1.0.0
+servers:
+  - url: https://homeservices.com/api/ # Changed this as version staging will be done in AWS
+paths:
+  /user:
+    post:
+      summary: Create user
+      description: Create a new user
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSignUp' # Changed referenced Schema to UserSignUp
+      responses:
+        default:
+          description: The operation was successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSignUp' # Changed referenced Schema to UserSignUp
+    patch: # added patch method
+      summary: Updates user details
+      description: Updates user details with provided json
+      operationId: updateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate' # Changed referenced Schema to UserUpdate
+      responses:
+        '200':
+          description: Operation Successful User Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserUpdate' # Changed referenced Schema to UserUpdate
+      security: 
+        - bearerAuth: []
+  /user/login:
+    post:
+      summary: User login
+      description: User login
+      operationId: loginUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: email
+          in: query
+          description: users email address
+          required: true
+          schema:
+            type: string
+            format: email
+        - name: password
+          in: query
+          description: users password
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                properties: # added UserGet schema to login return
+                  authorisation:
+                    $ref: '#/components/schemas/ResponseAuth'
+                  user:
+                    $ref: '#/components/schemas/UserGet'
+        '400':
+          description: Invalid username or password
+  /user/validate:
+    get:
+      summary: Validate access token
+      description: Validate access token provided
+      responses:
+        '200':
+          description: Valid access token
+          content:
+            application/json:
+              schema:
+                properties:
+                  exists:
+                    type: boolean
+        '401':
+          description: Access token is invalid or has expired
+
+  /user/refresh:
+    post:
+      summary: Refresh access token
+      description: Get a new access token by providing a refresh token
+      security: 
+        - bearerAuth: []
+      parameters:
+        - name: refresh_token
+          in: query
+          required: true
+          description: Refresh token received during auth
+          schema:
+            type: object
+            properties:
+              refresh_token:
+                type: string
+      responses:
+        '200':
+          description: New access token and refresh token are sent to user
+        '401':
+          description: Invalid or expired refresh token
+components:
+  schemas:
+    UserGet:
+      type: object
+      properties:
+        username:
+          type: string
+          example: myUsername123
+        firstname:
+          type: string
+          example: Snoop
+        lastname:
+          type: string
+          example: Dogg
+        email:
+          type: string
+          format: email
+          example: myemail@email.com
+        mobile:
+          type: string
+          pattern: ^\d{10}$
+        address:
+          $ref: '#/components/schemas/Address' # reference to Address
+        CCin:
+          $ref: '#/components/schemas/CreditCard' # reference to Credit Card
+        client:
+          $ref: '#/components/schemas/Client' # reference to Client Schema
+        professional:
+          $ref : '#/components/schemas/Professional' # reference to Professional Schema
+    UserSignUp: # For Sign Up
+      type: object
+      properties:
+        username:
+          type: string
+          example: myUsername123
+        firstname:
+          type: string
+          example: Snoop
+        lastname:
+          type: string
+          example: Dogg
+        email:
+          type: string
+          format: email
+          example: myemail@email.com
+        password:
+          type: string
+          example: myPassword123!!
+        mobile:
+          type: string
+          pattern: ^\d{10}$
+        address:
+          $ref: '#/components/schemas/Address' # reference to Address
+        userType:
+          $ref: '#/components/schemas/UserType' # reference to Usertype
+        membershipType:
+          $ref: '#/components/schemas/Membership' # reference to Membership
+        CCin:
+          $ref: '#/components/schemas/CreditCard' # reference to Credit Card
+        CCout:
+          $ref: '#/components/schemas/CreditCard' # reference to Credit Card
+      required:
+        - username
+    UserUpdate: # For User Update
+      type: object
+      properties:
+        username:
+          type: string
+          example: myUsername123
+        firstname:
+          type: string
+          example: Snoop
+        lastname:
+          type: string
+          example: Dogg
+        email:
+          type: string
+          format: email
+          example: myemail@email.com
+        password:
+          type: string
+          example: myPassword123!!
+        mobile:
+          type: string
+          pattern: ^\d{10}$
+        address:
+          $ref: '#/components/schemas/Address' # reference to Address
+        membershipType:
+          $ref: '#/components/schemas/Membership' # reference to Membership
+        CCin:
+          $ref: '#/components/schemas/CreditCard' # reference to Credit Card
+        CCout:
+          $ref: '#/components/schemas/CreditCard' # reference to Credit Card
+    CreditCard: # Created Credit Card Schema for ease of use and reduce duplication
+      type: object
+      properties:
+        CCname:
+          type: string
+          example: Alice
+        CCnumber:
+          type: string
+          pattern: ^[0-9]{16}$
+          example: 9876 5432 1987 6543
+        CCsecurity:
+          type: string
+          pattern: ^[0-9]{3}$
+          example: 321
+    Address: # Created Address Schema for ease of use and reduce duplication
+      type: object
+      properties:
+        streetName:
+          type: string
+          example: Sesame Street
+        streetNumber:
+          type: integer
+          example: 7
+        suburb:
+          type: string
+          example: Liverpool
+        postcode:
+          type: string
+          example: 2170
+      required:
+        - streetname
+        - streetnumber
+        - suburb
+        - postcode
+    Membership:
+      type: string
+      enum:
+        - Subscription
+        - Pay as you go
+    UserType:
+      type: string
+      enum:
+        - Client
+        - Professional
+    Client: # created Client schema mainly to allow front end to easily differentiate but also to house data
+      type: object
+      properties:
+        membership:
+          $ref: '#/components/schemas/Membership'
+    Professional: # created Professional schema mainly to allow front end to easily differentiate but also to house data
+      type: object
+      properties: 
+        CCin:
+          $ref: '#/components/schemas/CreditCard'
+    ResponseAuth: # Changed structure of ResponseAuth changed token to accessToken and added refreshToken
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: Token required for querying resource server, obtained by authorization
+        refreshToken:
+          type: string
+          description: Token required for reauthorisation
+        expiryDate:
+          type: string
+          description: "Dictates when the token will be set as expired and unusable"
+##TOKENS
+securityDefinitions:
+  basicAuth:
+    type: http
+    scheme: basic
+    description: authentication for obtaining tokens
+  bearerAuth:
+    type: http
+    scheme: bearer
+    description: Authentication token for requests
