@@ -102,21 +102,21 @@ paths:
           required: true
           schema:
             type: string
-        requestBody:
-          description: Update existing user object
+      requestBody:
+        description: Update existing user object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserGet'
+      responses:
+        '200':
+          description: User updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/componenets/schemas/UserGet'
-        responses:
-          '200':
-            description: User updated successfully
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/UserGet'
-          '401':
-            description: Invalid input
+                $ref: '#/components/schemas/UserGet'
+        '401':
+          description: Invalid input
           
       
 components:
