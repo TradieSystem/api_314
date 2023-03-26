@@ -8,19 +8,36 @@ servers:
 paths:
   /user/validate:
     get:
-      summary: Validate access token
-      description: Validate access token provided
+      summary: Check if user exists before signup
+      description: Check if user exists before signup
+      parameters:
+        - name: email
+          in: query
+          description: users email address
+          required: true
+          schema:
+            type: string
+            format: email
       responses:
         '200':
-          description: Valid access token
+          description: User already exists
           content:
             application/json:
               schema:
                 properties:
                   exists:
                     type: boolean
-        '401':
-          description: Access token is invalid or has expired
+        '400':
+          description: User does not exist
+          content:
+            application/json:
+              schema:
+                properties:
+                  exists:
+                    type: boolean
+                  pbkey:
+                    type: string
+          
   /user/refresh:
     post:
       summary: Refresh access token
