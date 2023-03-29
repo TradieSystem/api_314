@@ -227,6 +227,33 @@ components:
       properties: 
         CCin:
           $ref: '#/components/schemas/CreditCard'    
+    SecurityQuestions:
+      type: string
+      enum:
+        - CAR
+        - STREET
+        - PET
+        - BORN
+        - NICKNAME
+      description: >
+        * 'CAR': What was your first car?
+        * 'STREET': What was the name of the first street you lived on?
+        * 'PET': What was the name of your first pet?
+        * 'NICKNAME': What aws your childhood nickname?
+    ProfessionalServices:
+      type: string
+      enum:
+        - TREE_REMOVAL
+        - ROOF_CLEANING
+        - FENCE_INSTALLATION
+        - OVEN_REPAIRS
+        - PLUMBING
+      description: > 
+        * 'TREE_REMOVAL': Tree Removal
+        * 'ROOF_CLEANING': Roof Cleaning
+        * 'FENCE_INSTALLATION: Fence Installation
+        * 'OVEN_REPAIRS': Oven Repairs
+        * 'PLUMBING': Plumbing
       
     ResponseAuth:
       type: object
@@ -263,6 +290,9 @@ components:
         expiry:
           type: string
           description: Value that dictates when the token is expired/invalidated
+    
+      
+      
         
     
 ##TOKENS
