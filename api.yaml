@@ -20,15 +20,15 @@ paths:
             format: email
       responses:
         '200':
-          description: User already exists
+          description: User not found
           content:
             application/json:
               schema:
                 properties:
                   exists:
                     type: boolean
-        '400':
-          description: User does not exist
+        '417':
+          description: User already exists
           content:
             application/json:
               schema:
@@ -107,13 +107,13 @@ paths:
                 $ref: '#/components/schemas/ResponseAuth'
         '400':
           description: Invalid username or password
-  /user/updateUser/{username}:
+  /user/updateUser/{userID}:
     put:
       summary: Update user information
       description: A logged in user may update their profile information
       operationId: updateUser
       parameters:
-        - name: username
+        - name: userID
           in: path
           description: username of the user to update
           required: true
@@ -141,9 +141,9 @@ components:
     UserGet: # this will be the same as userSignUP because they require the same fields
       type: object
       properties:
-        username:
-          type: string
-          example: myUsername123
+        userID:
+          type: integer #is this only going to be an integer?
+          example: 1
         firstname:
           type: string
           example: Snoop
@@ -173,32 +173,6 @@ components:
           $ref: '#/components/schemas/CreditCard'
         CCout:
           $ref: '#/components/schemas/CreditCard'
-    # UserUpdate: #may need to discuss further on what users are able to update/change
-    #   type: object
-    #   properties:
-    #     firstname:
-    #       type: string
-    #       example: John
-    #     lastname: 
-    #       type: string
-    #       example: Smith
-    #     password:
-    #       type: string
-    #       example: myPassword123!!
-    #     email:
-    #       type: string
-    #       format: email
-    #       example: myemail@email.com
-    #     mobile:
-    #       type: string
-    #       pattern: '^\d{10}$'
-    #     address:
-    #       $ref: '#/components/schemas/Address'
-    #     CCin:
-    #       $ref: '#/components/schemas/CreditCard'
-    #     CCout:
-    #       $ref: '#/components/schemas/CreditCard'
-        
     Address:
       type: object
       properties:
