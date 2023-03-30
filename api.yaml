@@ -134,8 +134,26 @@ paths:
                 $ref: '#/components/schemas/UserGet'
         '401':
           description: Invalid input
+  /user/resetPassword:
+    post:
+      summary: Reset the users forgotten password
+      description: Reset the users forgotten password using email + sec qns
+      operationId: resetPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPassword'
+      responses:
+        '200':
+          description: Password has been reset
+        '404':
+          description: User not found
           
-      
+          
+          
+          
 components:
   schemas:
     UserGet: # this will be the same as userSignUP because they require the same fields
@@ -173,6 +191,8 @@ components:
           $ref: '#/components/schemas/CreditCard'
         CCout:
           $ref: '#/components/schemas/CreditCard'
+        securityquestions:
+          $ref: '#/components/schemas/SecurityQuestions'
     Address:
       type: object
       properties:
@@ -228,18 +248,31 @@ components:
         CCin:
           $ref: '#/components/schemas/CreditCard'    
     SecurityQuestions:
-      type: string
-      enum:
-        - CAR
-        - STREET
-        - PET
-        - BORN
-        - NICKNAME
+      type: array
+      minItems: 3
+      maxItems: 3
+      items:
+        type: string
+        enum:
+          - CAR
+          - STREET
+          - PET
+          - BORN
+          - NICKNAME
       description: >
         * 'CAR': What was your first car?
         * 'STREET': What was the name of the first street you lived on?
         * 'PET': What was the name of your first pet?
         * 'NICKNAME': What aws your childhood nickname?
+    ResetPassword:
+      type: object
+      properties:
+        email:
+          type: string
+          description: users email they used for signup
+          format: email
+        securityquestions:
+          $ref: '#/components/schemas/SecurityQuestions'
     ProfessionalServices:
       type: string
       enum:
