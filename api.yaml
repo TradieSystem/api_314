@@ -245,8 +245,18 @@ components:
     Professional: ##will have to ask ben about this
       type: object
       properties: 
+        user:
+          $ref: '#/components/schemas/UserGet'
+        client:
+          $ref: '#/components/schemas/Client'
+        profession: # <-- will have to discuss this with Matt or Ben
+          $ref: '#/components/schemas/ProfessionalServices'
         CCin:
-          $ref: '#/components/schemas/CreditCard'    
+          $ref: '#/components/schemas/CreditCard'
+        CCout:
+          $ref: '#/components/schemas/CreditCard'
+        securityquestions: # <-- answers should be dealt with in backend I believe
+          $ref: '#/components/schemas/SecurityQuestions'
     SecurityQuestions:
       type: array
       minItems: 3
@@ -287,6 +297,8 @@ components:
         * 'FENCE_INSTALLATION: Fence Installation
         * 'OVEN_REPAIRS': Oven Repairs
         * 'PLUMBING': Plumbing
+
+        
       
     ResponseAuth:
       type: object
@@ -326,7 +338,7 @@ components:
     
       
       
-        
+
     
 ##TOKENS
 securityDefinitions:
