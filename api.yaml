@@ -150,6 +150,27 @@ paths:
           description: Password has been reset
         '404':
           description: User not found
+  
+  /serviceRequest/{application}:
+    post:
+      summary: service request information
+      description: submit a new application form from customer
+      parameters:
+        - name: application
+          in: path
+          description: application data
+          required: true
+          schema:
+            $ref: '#/components/schemas/ServiceRequest'
+      responses:
+        '201':
+          description: The form has been submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceRequest'
+        '401':
+          description: application could not be submitted
           
           
           
@@ -297,7 +318,55 @@ components:
         * 'FENCE_INSTALLATION: Fence Installation
         * 'OVEN_REPAIRS': Oven Repairs
         * 'PLUMBING': Plumbing
-
+    Customer:
+      type: object
+      description: customer location information
+      properties:
+        userID:
+          type: integer
+          description: customers ID
+        firstname: 
+          type: string
+          description: customer first name
+        lastname: 
+          type: string  
+          description: customer last name
+        email:
+          type: string
+          description: customer email
+        mobile:
+          type: string
+          description: customer phone number
+        address:
+          $ref: '#/components/schemas/Address'
+        usertype:
+          $ref: '#/components/schemas/UserType'
+    ServiceRequest:
+      type: object
+      properties:
+        applicationNumber:
+          type: integer
+          description: unique identifier for service request
+        applicationCreatedDate:
+          type: string
+          description: The date the service request was created
+          format: MM/DD/YYYY
+        serviceType:
+          type: string
+          description: the service type
+        requestStatus:
+          type: string
+          description: The status of the request
+        customerinfo:
+          $ref: '#/components/schemas/Customer'
+        totalcost:
+          type: integer
+          description: the total cost of the service request
+        billing:
+          $ref: '#/components/schemas/CreditCard'
+        jobdescription:
+          type: string
+          description: Job description
         
       
     ResponseAuth:
