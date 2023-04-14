@@ -355,14 +355,11 @@ components:
         * 'PLUMBING': Plumbing
         
     SecurityQuestions:
-      type: object
-      properties:
-        securityQuestion1:
+        type: array
+        minItems: 3
+        maxItems: 3
+        items:
           $ref: '#/components/schemas/SecurityQuestion'
-        securityQuestion2:
-          $ref: '#/components/schemas/SecurityQuestion'
-        securityQuestion3:
-          $ref: '#/components/schemas/SecurityQuestion'     
           
     SecurityQuestion:
       type: object
