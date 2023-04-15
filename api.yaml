@@ -5,9 +5,29 @@ info:
   version: 1.0.0
 servers:
   - url: https://homeservices.com/api
-  
-
 paths:
+  /user:
+    get:
+      summary: get user object
+      description: get user object
+      parameters:
+        - name: userID
+          in: query
+          description: user object
+          required: true
+          schema:
+            type: integer
+            description: user id
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGet'
+        '401':
+          description: user not found
+      
   /user/validate:
     get:
       summary: Check if user exists before signup
@@ -61,7 +81,6 @@ paths:
           description: New access token and refresh token are sent to user
         '400':
           description: Invalid or expired refresh token
-          
   /user/userCreate:
     post:
       summary: Create user
@@ -80,7 +99,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserGet'
-                
   /user/login:
     post:
       summary: User login
@@ -111,12 +129,18 @@ paths:
                 $ref: '#/components/schemas/ResponseAuth'
         '400':
           description: Invalid username or password
-          
-  /user/updateUser:
+  /user/updateUser/{userID}:
     put:
       summary: Update user information
       description: A logged in user may update their profile information
       operationId: updateUser
+      parameters:
+        - name: userID
+          in: path
+          description: username of the user to update
+          required: true
+          schema:
+            type: string
       requestBody:
         description: Update existing user object
         content:
@@ -132,63 +156,11 @@ paths:
                 $ref: '#/components/schemas/UserGet'
         '401':
           description: Invalid input
-          
-  /user/resetPassword: # Reworked ResetPassword to allow for three different methods on the endpoint
-    get:
-      summary: For resetting user password, request challenges to pass
-      description: Reset the users forgotten password using email + sec qns
-      operationId: resetPassword_get
-      parameters:
-        - name: email
-          in: query
-          description: users email address
-          required: true
-          schema:
-            type: string
-            format: email      
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResetPassword'
-          description: User found
-        '404':
-          description: User not found
+  /user/resetPassword:
     post:
-      summary: For resetting user password, provide correct answers to continue
-      description: Reset the users forgotten password using email + sec qns
-      operationId: resetPassword_post
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ResetPassword'
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-          description: Correct answers provided
-        '406':
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-          description: Incorrect answers provided
-
-    put:
       summary: Reset the users forgotten password
       description: Reset the users forgotten password using email + sec qns
-      operationId: resetPassword_put
+      operationId: resetPassword
       requestBody:
         required: true
         content:
@@ -198,21 +170,22 @@ paths:
       responses:
         '200':
           description: Password has been reset
+        '404':
+          description: User not found
   
-  /serviceRequest/{application}:
+  /serviceRequest:
     post:
       summary: service request information
       description: submit a new application form from customer
-      parameters:
-        - name: application
-          in: path
-          description: application data
-          required: true
-          schema:
-            $ref: '#/components/schemas/ServiceRequest'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceRequest'
       responses:
         '201':
-          description: The form has been submitted successfully
+          description: service request created
           content:
             application/json:
               schema:
@@ -220,24 +193,110 @@ paths:
         '401':
           description: application could not be submitted
           
-        
-components:
-  securitySchemes:
-      bearerAuth:
-        type: http
-        scheme: bearer
-        description: Authentication token for obtaining tokens
-        
-      basicAuth:
-        type: http
-        scheme: bearer
-        description: Authentication token for requests  
+    ##create 'getting server requests by user id'
+    get:
+      summary: get a list of service requests of users for a specific type
+      parameters:
+        - name: userID
+          in: query
+          description: user id
+          required: true
+          schema:
+            type: integer
+        - name: userType
+          in: query
+          description: user type
+          required: true
+          schema:
+            $ref: '#/components/schemas/UserType'
+      responses:
+        '201':
+          description: service request created
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  $ref: '#/components/schemas/ServiceRequest'
+    put:
+      summary: update service request
+      description: udpate service request
+      requestBody:
+        description: Update existing user object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceRequest'
+      responses:
+        '200':
+          description: service request updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceRequest'
+                  
+  /serviceRequest/available:
+    get:
+      summary: get available service requests for professinals
+      parameters:
+        - name: postcode
+          in: query
+          description: postcode
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: returns service requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                #status request will be new, postcode will match input
+                  $ref: '#/components/schemas/ServiceRequest'
+                  
+                  
+  /serviceRequest/application:
+    post: 
+      summary: apply for a service request
+      requestBody:
+        description: send service request application
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceRequestApplication'
+      responses:
+        '200':
+          description: returns service request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceRequest'
+    put:
+      summary: select a professional
+      requestBody:
+        description: send service request application
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceRequestApplication'
+      responses:
+        '200':
+          description: returns service request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceRequest'
 
+
+  
+components:
   schemas:
     UserGet: # this will be the same as userSignUP because they require the same fields
       type: object
       properties:
-        user_id:
+        userID:
           type: integer #is this only going to be an integer?
           example: 1
         firstName:
@@ -258,22 +317,26 @@ components:
           pattern: '^\d{10}$'
         address:
           $ref: '#/components/schemas/Address'
-        client:
-          $ref: '#/components/schemas/Client'
-        professional:
-          $ref: '#/components/schemas/Professional'
+        userType:
+          type: string
+          enum:
+            - Client
+            - Tradesman
+        membershipType:
+          $ref: '#/components/schemas/MembershipType'
+        CCin:
+          $ref: '#/components/schemas/CreditCard'
         CCout:
           $ref: '#/components/schemas/CreditCard'
         securityQuestions:
           $ref: '#/components/schemas/SecurityQuestions'
-          
     Address:
       type: object
       properties:
-        streetname:
+        streetName:
           type: string
           example: Sesame Street
-        streetnumber:
+        streetNumber:
           type: integer
           example: 7
         suburb:
@@ -283,11 +346,10 @@ components:
           type: string
           example: 2170
       required:
-        - streetname
-        - streetnumber
+        - streetName
+        - streetNumber
         - suburb
         - postcode
-        
     CreditCard:
       type: object
       properties:
@@ -302,7 +364,6 @@ components:
           type: string
           pattern: ^[0-9]{3}$
           example: 123
-          
     MembershipType:
       type: string
       enum:
@@ -318,27 +379,47 @@ components:
       properties:
         membership:
           $ref: '#/components/schemas/MembershipType'
-          
     Professional: ##will have to ask ben about this
       type: object
       properties: 
-        services: # <-- will have to discuss this with Matt or Ben
-          type: array
-          items:
-            $ref: '#/components/schemas/ProfessionalServices'
+        user:
+          $ref: '#/components/schemas/UserGet'
+        client:
+          $ref: '#/components/schemas/Client'
+        profession: # <-- will have to discuss this with Matt or Ben
+          $ref: '#/components/schemas/ProfessionalServices'
         CCin:
           $ref: '#/components/schemas/CreditCard'
-          
+        CCout:
+          $ref: '#/components/schemas/CreditCard'
+        securityQuestions: # <-- answers should be dealt with in backend I believe
+          $ref: '#/components/schemas/SecurityQuestions'
+    SecurityQuestions:
+      type: array
+      minItems: 3
+      maxItems: 3
+      items:
+        type: string
+        enum:
+          - CAR
+          - STREET
+          - PET
+          - BORN
+          - NICKNAME
+      description: >
+        * 'CAR': What was your first car?
+        * 'STREET': What was the name of the first street you lived on?
+        * 'PET': What was the name of your first pet?
+        * 'NICKNAME': What aws your childhood nickname?
     ResetPassword:
       type: object
       properties:
         email:
           type: string
-          description: The User_id that will be used for updating password
-          example: '123'
-        securityquestions:
+          description: users email they used for signup
+          format: email
+        securityQuestions:
           $ref: '#/components/schemas/SecurityQuestions'
-          
     ProfessionalServices:
       type: string
       enum:
@@ -353,34 +434,6 @@ components:
         * 'FENCE_INSTALLATION: Fence Installation
         * 'OVEN_REPAIRS': Oven Repairs
         * 'PLUMBING': Plumbing
-        
-    SecurityQuestions:
-        type: array
-        minItems: 3
-        maxItems: 3
-        items:
-          $ref: '#/components/schemas/SecurityQuestion'
-          
-    SecurityQuestion:
-      type: object
-      properties:
-        securityQuestion:
-          type: string
-          enum:
-            - CAR
-            - STREET
-            - PET
-            - BORN
-            - NICKNAME
-          description: >
-            * 'CAR': What was your first car?
-            * 'STREET': What was the name of the first street you lived on?
-            * 'PET': What was the name of your first pet?
-            * 'NICKNAME': What aws your childhood nickname?
-        answer:
-          type: string
-          example: "Car"  
-            
     Customer:
       type: object
       description: customer location information
@@ -388,10 +441,10 @@ components:
         userID:
           type: integer
           description: customers ID
-        firstname: 
+        firstName: 
           type: string
           description: customer first name
-        lastname: 
+        lastName: 
           type: string  
           description: customer last name
         email:
@@ -402,16 +455,34 @@ components:
           description: customer phone number
         address:
           $ref: '#/components/schemas/Address'
-        usertype:
+        userType:
           $ref: '#/components/schemas/UserType'
+    
+    ServiceRequestApplication:
+      type: object
+      properties:
+        requestID:
+          type: integer
+          description: requestId associated
+        applicationID:
+          type: integer
+        offerDate:
+          type: string
+          format: MM/DD/YYYY
+        userID:
+          type: integer
+        cost:
+          type: number
+        applicationStatus:
+          type: string
           
     ServiceRequest:
       type: object
       properties:
-        applicationNumber:
+        requestID:
           type: integer
           description: unique identifier for service request
-        applicationCreatedDate:
+        requestDate:
           type: string
           description: The date the service request was created
           format: MM/DD/YYYY
@@ -421,17 +492,22 @@ components:
         requestStatus:
           type: string
           description: The status of the request
-        customerinfo:
-          $ref: '#/components/schemas/Customer'
-        totalcost:
-          type: integer
-          description: the total cost of the service request
-        billing:
-          $ref: '#/components/schemas/CreditCard'
-        jobdescription:
+        jobDescription:
           type: string
           description: Job description
-        
+        postcode:
+          type: integer
+          description: postcode of the job
+        professionalID:
+          type: string
+          description: Profesional Id that is assigned to service request
+        applications:
+          type: array
+          items: 
+            $ref: '#/components/schemas/ServiceRequestApplication'
+          description: array of applications
+  
+      
     ResponseAuth:
       type: object
       properties:
@@ -455,7 +531,6 @@ components:
         expiry:
           type: string
           description: Value that dictates when the token is expired/invalidated
-          
     AccessToken: #userID+expiry needs to properties of both tokens since they will be treated separately
       type: object
       properties:
@@ -469,3 +544,17 @@ components:
           type: string
           description: Value that dictates when the token is expired/invalidated
     
+      
+      
+
+    
+##TOKENS
+securityDefinitions:
+  bearerAuth:
+    type: http
+    scheme: bearer
+    description: Authentication token for obtaining tokens
+  basicAuth:
+    type: http
+    scheme: bearer
+    description: Authentication token for requests
