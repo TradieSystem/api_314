@@ -5,6 +5,8 @@ info:
   version: 1.0.0
 servers:
   - url: https://homeservices.com/api
+  
+
 paths:
   /user/validate:
     get:
@@ -59,6 +61,7 @@ paths:
           description: New access token and refresh token are sent to user
         '400':
           description: Invalid or expired refresh token
+          
   /user/userCreate:
     post:
       summary: Create user
@@ -77,6 +80,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserGet'
+                
   /user/login:
     post:
       summary: User login
@@ -107,18 +111,12 @@ paths:
                 $ref: '#/components/schemas/ResponseAuth'
         '400':
           description: Invalid username or password
-  /user/updateUser/{userID}:
+          
+  /user/updateUser:
     put:
       summary: Update user information
       description: A logged in user may update their profile information
       operationId: updateUser
-      parameters:
-        - name: userID
-          in: path
-          description: username of the user to update
-          required: true
-          schema:
-            type: string
       requestBody:
         description: Update existing user object
         content:
@@ -134,11 +132,63 @@ paths:
                 $ref: '#/components/schemas/UserGet'
         '401':
           description: Invalid input
-  /user/resetPassword:
+          
+  /user/resetPassword: # Reworked ResetPassword to allow for three different methods on the endpoint
+    get:
+      summary: For resetting user password, request challenges to pass
+      description: Reset the users forgotten password using email + sec qns
+      operationId: resetPassword_get
+      parameters:
+        - name: email
+          in: query
+          description: users email address
+          required: true
+          schema:
+            type: string
+            format: email      
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetPassword'
+          description: User found
+        '404':
+          description: User not found
     post:
+      summary: For resetting user password, provide correct answers to continue
+      description: Reset the users forgotten password using email + sec qns
+      operationId: resetPassword_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPassword'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+          description: Correct answers provided
+        '406':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+          description: Incorrect answers provided
+
+    put:
       summary: Reset the users forgotten password
       description: Reset the users forgotten password using email + sec qns
-      operationId: resetPassword
+      operationId: resetPassword_put
       requestBody:
         required: true
         content:
@@ -148,8 +198,6 @@ paths:
       responses:
         '200':
           description: Password has been reset
-        '404':
-          description: User not found
   
   /serviceRequest/{application}:
     post:
@@ -172,21 +220,30 @@ paths:
         '401':
           description: application could not be submitted
           
-          
-          
-          
+        
 components:
+  securitySchemes:
+      bearerAuth:
+        type: http
+        scheme: bearer
+        description: Authentication token for obtaining tokens
+        
+      basicAuth:
+        type: http
+        scheme: bearer
+        description: Authentication token for requests  
+
   schemas:
     UserGet: # this will be the same as userSignUP because they require the same fields
       type: object
       properties:
-        userID:
+        user_id:
           type: integer #is this only going to be an integer?
           example: 1
-        firstname:
+        firstName:
           type: string
           example: Snoop
-        lastname:
+        lastName:
           type: string
           example: Dogg
         email:
@@ -201,19 +258,15 @@ components:
           pattern: '^\d{10}$'
         address:
           $ref: '#/components/schemas/Address'
-        usertype:
-          type: string
-          enum:
-            - Client
-            - Tradesman
-        membershiptype:
-          $ref: '#/components/schemas/MembershipType'
-        CCin:
-          $ref: '#/components/schemas/CreditCard'
+        client:
+          $ref: '#/components/schemas/Client'
+        professional:
+          $ref: '#/components/schemas/Professional'
         CCout:
           $ref: '#/components/schemas/CreditCard'
-        securityquestions:
+        securityQuestions:
           $ref: '#/components/schemas/SecurityQuestions'
+          
     Address:
       type: object
       properties:
@@ -234,6 +287,7 @@ components:
         - streetnumber
         - suburb
         - postcode
+        
     CreditCard:
       type: object
       properties:
@@ -248,6 +302,7 @@ components:
           type: string
           pattern: ^[0-9]{3}$
           example: 123
+          
     MembershipType:
       type: string
       enum:
@@ -263,47 +318,27 @@ components:
       properties:
         membership:
           $ref: '#/components/schemas/MembershipType'
+          
     Professional: ##will have to ask ben about this
       type: object
       properties: 
-        user:
-          $ref: '#/components/schemas/UserGet'
-        client:
-          $ref: '#/components/schemas/Client'
-        profession: # <-- will have to discuss this with Matt or Ben
-          $ref: '#/components/schemas/ProfessionalServices'
+        services: # <-- will have to discuss this with Matt or Ben
+          type: array
+          items:
+            $ref: '#/components/schemas/ProfessionalServices'
         CCin:
           $ref: '#/components/schemas/CreditCard'
-        CCout:
-          $ref: '#/components/schemas/CreditCard'
-        securityquestions: # <-- answers should be dealt with in backend I believe
-          $ref: '#/components/schemas/SecurityQuestions'
-    SecurityQuestions:
-      type: array
-      minItems: 3
-      maxItems: 3
-      items:
-        type: string
-        enum:
-          - CAR
-          - STREET
-          - PET
-          - BORN
-          - NICKNAME
-      description: >
-        * 'CAR': What was your first car?
-        * 'STREET': What was the name of the first street you lived on?
-        * 'PET': What was the name of your first pet?
-        * 'NICKNAME': What aws your childhood nickname?
+          
     ResetPassword:
       type: object
       properties:
         email:
           type: string
-          description: users email they used for signup
-          format: email
+          description: The User_id that will be used for updating password
+          example: '123'
         securityquestions:
           $ref: '#/components/schemas/SecurityQuestions'
+          
     ProfessionalServices:
       type: string
       enum:
@@ -318,6 +353,34 @@ components:
         * 'FENCE_INSTALLATION: Fence Installation
         * 'OVEN_REPAIRS': Oven Repairs
         * 'PLUMBING': Plumbing
+        
+    SecurityQuestions:
+        type: array
+        minItems: 3
+        maxItems: 3
+        items:
+          $ref: '#/components/schemas/SecurityQuestion'
+          
+    SecurityQuestion:
+      type: object
+      properties:
+        securityQuestion:
+          type: string
+          enum:
+            - CAR
+            - STREET
+            - PET
+            - BORN
+            - NICKNAME
+          description: >
+            * 'CAR': What was your first car?
+            * 'STREET': What was the name of the first street you lived on?
+            * 'PET': What was the name of your first pet?
+            * 'NICKNAME': What aws your childhood nickname?
+        answer:
+          type: string
+          example: "Car"  
+            
     Customer:
       type: object
       description: customer location information
@@ -341,6 +404,7 @@ components:
           $ref: '#/components/schemas/Address'
         usertype:
           $ref: '#/components/schemas/UserType'
+          
     ServiceRequest:
       type: object
       properties:
@@ -368,7 +432,6 @@ components:
           type: string
           description: Job description
         
-      
     ResponseAuth:
       type: object
       properties:
@@ -392,6 +455,7 @@ components:
         expiry:
           type: string
           description: Value that dictates when the token is expired/invalidated
+          
     AccessToken: #userID+expiry needs to properties of both tokens since they will be treated separately
       type: object
       properties:
@@ -405,17 +469,3 @@ components:
           type: string
           description: Value that dictates when the token is expired/invalidated
     
-      
-      
-
-    
-##TOKENS
-securityDefinitions:
-  bearerAuth:
-    type: http
-    scheme: bearer
-    description: Authentication token for obtaining tokens
-  basicAuth:
-    type: http
-    scheme: bearer
-    description: Authentication token for requests
