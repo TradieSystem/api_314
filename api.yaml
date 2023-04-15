@@ -81,6 +81,7 @@ paths:
           description: New access token and refresh token are sent to user
         '400':
           description: Invalid or expired refresh token
+          
   /user/userCreate:
     post:
       summary: Create user
@@ -99,6 +100,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserGet'
+                
   /user/login:
     post:
       summary: User login
@@ -129,18 +131,12 @@ paths:
                 $ref: '#/components/schemas/ResponseAuth'
         '400':
           description: Invalid username or password
-  /user/updateUser/{userID}:
+          
+  /user/updateUser:
     put:
       summary: Update user information
       description: A logged in user may update their profile information
       operationId: updateUser
-      parameters:
-        - name: userID
-          in: path
-          description: username of the user to update
-          required: true
-          schema:
-            type: string
       requestBody:
         description: Update existing user object
         content:
@@ -156,6 +152,7 @@ paths:
                 $ref: '#/components/schemas/UserGet'
         '401':
           description: Invalid input
+          
   /user/resetPassword:
     post:
       summary: Reset the users forgotten password
@@ -236,10 +233,6 @@ paths:
                   example: "Perplexed"
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserGet'
           description: service request updated
           content:
             application/json:
@@ -266,7 +259,6 @@ paths:
                 items:
                 #status request will be new, postcode will match input
                   $ref: '#/components/schemas/ServiceRequest'
-                  
                   
   /serviceRequest/application:
     post: 
@@ -300,8 +292,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ServiceRequest'
 
-
-  
 components:
   schemas:
     UserGet: # this will be the same as userSignUP because they require the same fields
@@ -341,6 +331,7 @@ components:
           $ref: '#/components/schemas/CreditCard'
         securityQuestions:
           $ref: '#/components/schemas/SecurityQuestions'
+          
     Address:
       type: object
       properties:
@@ -361,6 +352,7 @@ components:
         - streetNumber
         - suburb
         - postcode
+        
     CreditCard:
       type: object
       properties:
@@ -375,21 +367,25 @@ components:
           type: string
           pattern: ^[0-9]{3}$
           example: 123
+          
     MembershipType:
       type: string
       enum:
         - Subscription
         - Pay on demand
+        
     UserType:
       type: string
       enum:
         - Client
         - Professional
+        
     Client: ##will have to ask ben about this
       type: object
       properties:
         membership:
           $ref: '#/components/schemas/MembershipType'
+          
     Professional: ##will have to ask ben about this
       type: object
       properties: 
@@ -405,23 +401,22 @@ components:
           $ref: '#/components/schemas/CreditCard'
         securityQuestions: # <-- answers should be dealt with in backend I believe
           $ref: '#/components/schemas/SecurityQuestions'
+          
     SecurityQuestions:
       type: array
       minItems: 3
       maxItems: 3
       items:
-        type: string
-        enum:
-          - CAR
-          - STREET
-          - PET
-          - BORN
-          - NICKNAME
-      description: >
-        * 'CAR': What was your first car?
-        * 'STREET': What was the name of the first street you lived on?
-        * 'PET': What was the name of your first pet?
-        * 'NICKNAME': What aws your childhood nickname?
+        $ref: '#/components/schemas/SecurityQuestion'
+        
+    SecurityQuestion:
+      type: object
+      properties:
+        securityQuestion:
+          type: string
+        answer:
+          type: string
+        
     ResetPassword:
       type: object
       properties:
@@ -431,6 +426,7 @@ components:
           format: email
         securityQuestions:
           $ref: '#/components/schemas/SecurityQuestions'
+          
     ProfessionalServices:
       type: string
       enum:
@@ -445,6 +441,7 @@ components:
         * 'FENCE_INSTALLATION: Fence Installation
         * 'OVEN_REPAIRS': Oven Repairs
         * 'PLUMBING': Plumbing
+        
     Customer:
       type: object
       description: customer location information
@@ -518,7 +515,6 @@ components:
             $ref: '#/components/schemas/ServiceRequestApplication'
           description: array of applications
   
-      
     ResponseAuth:
       type: object
       properties:
@@ -542,6 +538,7 @@ components:
         expiry:
           type: string
           description: Value that dictates when the token is expired/invalidated
+          
     AccessToken: #userID+expiry needs to properties of both tokens since they will be treated separately
       type: object
       properties:
@@ -554,10 +551,6 @@ components:
         expiry:
           type: string
           description: Value that dictates when the token is expired/invalidated
-    
-      
-      
-
     
 ##TOKENS
 securityDefinitions:
