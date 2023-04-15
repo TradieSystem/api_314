@@ -184,7 +184,6 @@ paths:
                   success:
                     type: boolean
           description: Incorrect answers provided
-
     put:
       summary: Reset the users forgotten password
       description: Reset the users forgotten password using email + sec qns
@@ -194,7 +193,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ResetPassword'
+              type: object
+              properties:
+                user_id:
+                  type: int
+                  example: 123
+                password:
+                  type: password
+                  example: "Perplexed"
       responses:
         '200':
           description: Password has been reset
