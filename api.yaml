@@ -196,13 +196,17 @@ paths:
               type: object
               properties:
                 user_id:
-                  type: int
+                  type: integer
                   example: 123
                 password:
-                  type: password
+                  type: string
                   example: "Perplexed"
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGet'
           description: Password has been reset
   
   /serviceRequest/{application}:
