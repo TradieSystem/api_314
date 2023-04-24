@@ -81,7 +81,6 @@ paths:
           description: New access token and refresh token are sent to user
         '400':
           description: Invalid or expired refresh token
-          
   /user/userCreate:
     post:
       summary: Create user
@@ -100,7 +99,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserGet'
-                
   /user/login:
     post:
       summary: User login
@@ -131,12 +129,18 @@ paths:
                 $ref: '#/components/schemas/ResponseAuth'
         '400':
           description: Invalid username or password
-          
   /user/updateUser:
     put:
       summary: Update user information
       description: A logged in user may update their profile information
       operationId: updateUser
+      parameters:
+        - name: userID
+          in: path
+          description: username of the user to update
+          required: true
+          schema:
+            type: string
       requestBody:
         description: Update existing user object
         content:
@@ -152,7 +156,6 @@ paths:
                 $ref: '#/components/schemas/UserGet'
         '401':
           description: Invalid input
-          
   /user/resetPassword:
     post:
       summary: Reset the users forgotten password
@@ -223,14 +226,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                user_id:
-                  type: integer
-                  example: 123
-                password:
-                  type: string
-                  example: "Perplexed"
+              $ref: '#/components/schemas/ServiceRequest'
       responses:
         '200':
           description: service request updated
@@ -249,6 +245,11 @@ paths:
           required: true
           schema:
             type: string
+        - name: professionalID
+          in: query
+          description: professional id
+          schema:
+            type: integer
       responses:
         '200':
           description: returns service requests
@@ -259,6 +260,7 @@ paths:
                 items:
                 #status request will be new, postcode will match input
                   $ref: '#/components/schemas/ServiceRequest'
+                  
                   
   /serviceRequest/application:
     post: 
@@ -291,6 +293,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServiceRequest'
+
+/serviceRequest/ServiceRequestReview:
+  post:
+    summary: client posts a review
+    requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceRequestReview'
+    responses:
+        '200':
+          description: returns service request review
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceRequestReview'
 
 components:
   schemas:
@@ -331,7 +349,6 @@ components:
           $ref: '#/components/schemas/CreditCard'
         securityQuestions:
           $ref: '#/components/schemas/SecurityQuestions'
-          
     Address:
       type: object
       properties:
@@ -352,7 +369,6 @@ components:
         - streetNumber
         - suburb
         - postcode
-        
     CreditCard:
       type: object
       properties:
@@ -367,25 +383,21 @@ components:
           type: string
           pattern: ^[0-9]{3}$
           example: 123
-          
     MembershipType:
       type: string
       enum:
         - Subscription
         - Pay on demand
-        
     UserType:
       type: string
       enum:
         - Client
         - Professional
-        
     Client: ##will have to ask ben about this
       type: object
       properties:
         membership:
           $ref: '#/components/schemas/MembershipType'
-          
     Professional: ##will have to ask ben about this
       type: object
       properties: 
@@ -401,22 +413,23 @@ components:
           $ref: '#/components/schemas/CreditCard'
         securityQuestions: # <-- answers should be dealt with in backend I believe
           $ref: '#/components/schemas/SecurityQuestions'
-          
     SecurityQuestions:
       type: array
       minItems: 3
       maxItems: 3
       items:
-        $ref: '#/components/schemas/SecurityQuestion'
-        
-    SecurityQuestion:
-      type: object
-      properties:
-        securityQuestion:
-          type: string
-        answer:
-          type: string
-        
+        type: string
+        enum:
+          - CAR
+          - STREET
+          - PET
+          - BORN
+          - NICKNAME
+      description: >
+        * 'CAR': What was your first car?
+        * 'STREET': What was the name of the first street you lived on?
+        * 'PET': What was the name of your first pet?
+        * 'NICKNAME': What aws your childhood nickname?
     ResetPassword:
       type: object
       properties:
@@ -426,7 +439,6 @@ components:
           format: email
         securityQuestions:
           $ref: '#/components/schemas/SecurityQuestions'
-          
     ProfessionalServices:
       type: string
       enum:
@@ -441,7 +453,6 @@ components:
         * 'FENCE_INSTALLATION: Fence Installation
         * 'OVEN_REPAIRS': Oven Repairs
         * 'PLUMBING': Plumbing
-        
     Customer:
       type: object
       description: customer location information
@@ -477,7 +488,7 @@ components:
         offerDate:
           type: string
           format: MM/DD/YYYY
-        userID:
+        professionalID:
           type: integer
         cost:
           type: number
@@ -514,7 +525,29 @@ components:
           items: 
             $ref: '#/components/schemas/ServiceRequestApplication'
           description: array of applications
+        rating:
+          type: integer
+          description: rating of the service request (1-5)
+        review:
+          type: string
+          description: review of the service request
+        
+        
+    ServiceRequestReview:
+      type: object
+      properties: 
+        requestID:
+          type: integer
+          description: request id
+        rating:
+          type: integer
+          description: rating from 1-5
+        review:
+          type: string  
+          description: review description
+        
   
+      
     ResponseAuth:
       type: object
       properties:
@@ -538,7 +571,6 @@ components:
         expiry:
           type: string
           description: Value that dictates when the token is expired/invalidated
-          
     AccessToken: #userID+expiry needs to properties of both tokens since they will be treated separately
       type: object
       properties:
@@ -551,6 +583,10 @@ components:
         expiry:
           type: string
           description: Value that dictates when the token is expired/invalidated
+    
+      
+      
+
     
 ##TOKENS
 securityDefinitions:
